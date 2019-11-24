@@ -1,5 +1,4 @@
-<?php defined('ABSPATH') || die(); ?>
-<?php /** @var \wpLinksets\Plugin $this */ ?>
+<?php defined('ABSPATH') || die ?>
 
 <script>
     wpLinksets = wpLinksets || {};

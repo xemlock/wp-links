@@ -1,8 +1,8 @@
 <?php
 
 /*
- * Plugin Name: xemlock/wp-links
- * Plugin URI:  https://github.com/xemlock/wp-links
+ * Plugin Name: WP Post Type: Link
+ * Plugin URI:  https://github.com/xemlock/wp-post-type-link
  * Description: Link custom post type
  * Version:     0.1.0
  * Author:      xemlock
@@ -10,6 +10,8 @@
  */
 
 defined('ABSPATH') || die;
+
+if (!defined('WP_POST_TYPE_LINK')): define('WP_POST_TYPE_LINK', __FILE__);
 
 add_action('init', function () {
     $pt = array(
@@ -278,3 +280,5 @@ add_filter( 'pre_get_posts', function (&$posts) {
 add_filter( 'posts_where', function ($where, &$posts) {
     return $where;
 }, 10, 2);
+
+endif; // WP_POST_TYPE_LINK

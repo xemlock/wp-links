@@ -1,5 +1,5 @@
 {
-    "name": "xemlock/wp-links",
+    "name": "xemlock/wp-post-type-link",
     "description": "Link post type for WordPress",
     "require": {
         "php": ">=5.3.0",
