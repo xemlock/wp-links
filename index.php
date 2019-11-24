@@ -116,13 +116,16 @@ add_action('wp_loaded', function () {
 });
 
 add_action('edit_form_after_title', function (\WP_Post $post) {
+    if ($post->post_type !== 'link') {
+        return;
+    }
 ?>
 <style>
 /* hide 'See updated post' */
-body.post-type-link .notice.updated a {
+body .notice.updated a {
     display: none;
 }
-body.post-type-link #titlediv #edit-slug-box {
+body #titlediv #edit-slug-box {
     display: none;
 }
 </style>
@@ -130,34 +133,45 @@ body.post-type-link #titlediv #edit-slug-box {
 <div class="postbox" style="margin: 15px 0 0">
     <h3 style="border-bottom:1px solid #eee;position:relative;">
         <button id="link-type-unselect" type="button" onclick="unselectLinkType()" style="display:none;position:absolute;right:12px;top:50%;transform:translateY(-50%);padding-left: 6px;" class="button">
-            <i class="dashicons dashicons-no" style="line-height:26px;"></i>Clear
+            <i class="dashicons dashicons-no" style="line-height:26px;"></i><?php esc_html_e('Clear') ?>
         </button>
-        <span>Link Type</span>
+        <span><?php esc_html_e('Link Details') ?></span>
 
     </h3>
     <div class="inside" style="margin:0;padding:0;">
-
-        <input type="hidden" name="link_type" value="<?php echo esc_attr($post->link_type) ?>" />
-        <input type="hidden" name="link_url" value="<?php echo esc_attr($post->link_url) ?>" />
-        <input type="hidden" name="link_post_id" value="<?php echo esc_attr($post->link_post_id) ?>" />
-        <input type="hidden" name="link_file_id" value="<?php echo esc_attr($post->link_file_id) ?>" />
-        <input type="hidden" name="link_video_id" value="<?php echo esc_attr($post->link_video_id) ?>" />
+<?php
+$link_meta = array(
+    'link_type' => '',
+    'link_url'  => '',
+);
+foreach (get_post_meta($post->ID) as $key => $values) {
+    if (substr($key, 0, 5) !== 'link_') {
+        continue;
+    }
+    foreach ($values as $value) {
+        $link_meta[$key] = (string) $value;
+    }
+}
+?>
+        <input type="hidden" name="link_type" value="<?php esc_attr_e($post->link_type) ?>" />
+        <input type="hidden" name="link_url" value="<?php esc_attr_e($post->link_url) ?>" />
+        <script>window.WP_Links_initialValues = <?php echo wp_json_encode($link_meta) ?></script>
         <div style="background:#f5f5f5;padding:12px;border-bottom:1px solid #dedede" id="link-type-select">
             <button type="button" onclick="setLinkType('url')">
                 <i class="dashicons dashicons-admin-site"></i>
-                <?php echo __('Website') ?>
+                <?php esc_html_e('Website') ?>
             </button>
             <button type="button" onclick="setLinkType('post')">
                 <i class="dashicons dashicons-admin-post"></i>
-                <?php echo __('Post') ?>
+                <?php esc_html_e('Post') ?>
             </button>
             <button type="button" onclick="setLinkType('file')">
                 <i class="dashicons dashicons-media-default"></i>
-                <?php echo __('File') ?>
+                <?php esc_html_e('File') ?>
             </button>
             <button type="button" onclick="setLinkType('youtube')">
                 <i class="dashicons dashicons-video-alt3"></i>
-                <?php echo __('YouTube Video') ?>
+                <?php esc_html_e('YouTube Video') ?>
             </button>
         </div>
         <div id="wp_link">
@@ -176,7 +190,7 @@ add_filter('wp_insert_post_data', function (array $data, array $post_data) {
     $post_id = $post_data['post_ID'];
     foreach ($post_data as $key => $value) {
         if (substr($key, 0, 5) === 'link_') {
-            update_post_meta($post_id, $key, $value);
+            update_post_meta($post_id, $key, (string) $value);
         }
     }
 
@@ -221,5 +235,38 @@ add_filter( 'the_posts', function ($posts) {
     return $posts;
 }, 10 );
 
+add_filter('manage_link_posts_columns', function (array $columns) {
+    $columns['title'] = __('Title');
+    return $columns;
+}, 10, 1);
 
 
+//add_action('manage_link_posts_custom_column', function ($column, $post_ID) {
+//    if ($column == 'title2') {
+//        $oldtitle = get_post($post_ID);
+//        $newtitle = str_replace(array("<span class='sub-title'>", "</span>"), array("", ""),$oldtitle);
+//        $title = esc_attr($newtitle);
+//        echo $title, 123;
+//    }
+//}, 100, 2);
+//
+
+add_filter('post_row_actions', function (array $actions, \WP_Post $post) {
+    if ($post->post_type === 'link') {
+        echo '<div style="width:100%;overflow:hidden;text-overflow:ellipsis;">', esc_html($post->link_url), '</div>';
+    }
+    return $actions;
+},10,2);
+
+
+// admin-ajax.php
+// wp_ajax_find_posts
+add_filter( 'pre_get_posts', function (&$posts) {
+    // fetch link_ metadata for post_type === 'link' found in posts in a single fetch
+    // and put them in postmeta cache
+    return $posts;
+}, 10 );
+
+add_filter( 'posts_where', function ($where, &$posts) {
+    return $where;
+}, 10, 2);

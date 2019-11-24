@@ -10,7 +10,7 @@ window.wpComponents = {};
 
         options = options || {};
         frame = wp.media({
-            title: options.title || wpLinksets.messages.selectFile,
+            title: options.title || 'Select file',
             button: { text: 'Select' },
             library: { type: options.type },
             multiple : options.multiple
@@ -64,7 +64,6 @@ window.wpComponents = {};
 
                 const input = dialog.find('[name="found_post_id"]:checked');
                 if (input.length) {
-                    const label = dialog.find('label[for="' + input.attr('id') + '"]');
                     const post_id = parseInt(input.val(), 10);
 
                     dialog.find('input, button').prop('disabled', true);
@@ -105,8 +104,6 @@ window.wpComponents = {};
 })(window.jQuery);
 
 window.jQuery(function ($) {
-    const typeInput = $('input[name="link_type"]');
-
     window.getTemplate = (name) => {
         if ($('#tmpl-' + name).size()) {
             const template = wp.template(name);
@@ -120,8 +117,7 @@ window.jQuery(function ($) {
         return template(
             $.extend(typeof data === 'object' && data || {}, {
                 $: $,
-                jQuery: $,
-                renderTemplate: renderTemplate
+                jQuery: $
             })
         );
     };
@@ -130,23 +126,22 @@ window.jQuery(function ($) {
 
     window.setLinkType = (linkType) => {
         if (linkType === 'file') {
-            wpComponents.selectFile((selection) => {
-                console.log('selection', selection);
-                if (selection) {
-                    applySelection('file', { file: selection });
-                    const postTitle = $('input[name=post_title]');
-                    postTitle.val(selection.filename).focus().blur();
-                }
+            wpComponents.selectFile((file) => {
+                applySelection('file', {
+                    link_url: file.url,
+                    link_file_id: file.id
+                });
+                $('input[name=post_title]').val(file.filename).focus().blur();
             }, {});
         } else if (linkType === 'post') {
-            wpComponents.selectPost((selection) => {
-                console.log('selection', selection);
-                if (selection) {
-                    applySelection('post', { post: selection });
-                    const postTitle = $('input[name=post_title]');
-                    postTitle.val(selection.title).focus().blur();
-                }
-            }, {});
+            wpComponents.selectPost((post) => {
+                console.log('selection', post);
+                applySelection('post', {
+                    link_url: post.link,
+                    link_post_id: post.ID
+                });
+                $('input[name=post_title]').val(post.title).focus().blur();
+            });
         } else {
             applySelection(linkType, {});
         }
@@ -155,6 +150,7 @@ window.jQuery(function ($) {
     window.unselectLinkType = function () {
         console.log('unselectLinkType', $('#wp_link').html('')[0]);
         $('input[name=link_type]').val('');
+        $('input[name=link_url]').val('');
         $('#wp_link').html('');
 
         $('#link-type-select').show();
@@ -163,35 +159,70 @@ window.jQuery(function ($) {
 
     function applySelection(linkType, selection) {
         $('input[name=link_type]').val(linkType);
+        $('input[name=link_url]').val(selection.link_url || '');
+
         $('#link-type-select').hide();
         $('#link-type-unselect').show();
+
         $('#wp_link').html(getTemplate('wpPostAttachments-item-' + linkType)(selection));
+
+        if (linkType === 'youtube') {
+            function setYoutubeId(url) {
+                const videoId = extractYoutubeId(url);
+                $('input[name=link_youtube_id]').val(videoId || '');
+
+                if (videoId) {
+                    $('input[name=link_url]').val('https://www.youtube.com/watch?v=' + videoId);
+                } else {
+                    $('input[name=link_url]').val('');
+                }
+
+                $('#wp_link').find('img.linkset-video-thumbnail').attr(
+                    'src',
+                    'http://img.youtube.com/vi/' + videoId + '/hqdefault.jpg'
+                );
+            }
+
+            $('#wp_link').find('input[name=link_youtube_url]').on('keyup change', function () {
+                setYoutubeId(this.value);
+            });
+
+            setYoutubeId(selection.link_url);
+        }
     }
 
-    switch (typeInput.val()) {
-        case 'post':
-            applySelection('post', {
-                post: {
-                    ID: $('input[name=link_post_id]').val(),
-                    link: $('input[name=link_url]').val()
-                }
-            });
-            break;
+    if (window.WP_Links_initialValues) {
+        const linkType = WP_Links_initialValues.link_type;
+        console.log('WP_Links_initialValues', window.WP_Links_initialValues);
 
-        case 'file':
-            applySelection('file', {
-                file: {
-                    id: $('input[name=link_file_id]').val(),
-                    url: $('input[name=link_url]').val()
-                }
-            });
-            break;
-
-        case 'youtube':
-        case 'url':
-            applySelection(typeInput.val(), {
-                url: $('input[name=link_url]').val()
-            });
-            break;
+        switch (linkType) {
+            case 'post':
+            case 'file':
+            case 'youtube':
+            case 'url':
+                applySelection(linkType, WP_Links_initialValues);
+                break;
+        }
     }
+
+    function extractYoutubeId(val) {
+        val = String(val);
+
+        const VIDEO_ID_REGEX = '[a-zA-Z0-9_-]{11}';
+        const patterns = [
+            new RegExp('^' + VIDEO_ID_REGEX + '$'), // Video ID only
+            new RegExp('[?&]v=(' + VIDEO_ID_REGEX + ')'),     // regular
+            new RegExp('\/v\/(' + VIDEO_ID_REGEX + ')'),      // embed
+            new RegExp('\/embed\/(' + VIDEO_ID_REGEX + ')'),  // embed
+            new RegExp('youtu\.be\/('+ VIDEO_ID_REGEX + ')'), // shortened
+        ];
+        for (let pattern of patterns) {
+            const match = val.match(pattern);
+            if (match && match[1]) {
+                return match[1];
+            }
+        }
+        return null;
+    }
+
 });

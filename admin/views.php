@@ -13,49 +13,45 @@
 <script type="text/html" id="tmpl-wpPostAttachments-item-url">
     <div class="linkset-item-type">
         <i class="dashicons dashicons-admin-site"></i>
-        <?php echo __('Website') ?>
+        <?php echo _e('Website') ?>
     </div>
 
-    <input type="text" name="link_url" value="{{ data.url }}" placeholder="https://" />
+    <input type="text" name="link_url" value="{{ data.link_url }}" placeholder="https://" />
 </script>
 
 <script type="text/html" id="tmpl-wpPostAttachments-item-post">
     <div class="linkset-item-type">
         <i class="dashicons dashicons-admin-post"></i>
-        <?php echo __('Post') ?>
+        <?php echo _e('Post') ?>
     </div>
 
-    <# if (data.post) { #>
     <div class="linkset-item-post-info">
-        <a href="{{ data.post.link }}" target="_blank">{{ data.post.link }}</a>
+        <a href="{{ data.link_url }}" target="_blank">{{ data.link_url }}</a>
     </div>
-    <# } #>
 
-    <input type="hidden" name="link_post_id" value="{{ data.post ? data.post.ID : '' }}" />
-    <input type="hidden" name="link_url" value="{{ data.post ? data.post.link : '' }}" />
+    <input type="hidden" name="link_post_id" value="{{ data.link_post_id }}" />
 </script>
 
 <script type="text/html" id="tmpl-wpPostAttachments-item-file">
     <div class="linkset-item-type">
         <i class="dashicons dashicons-media-default"></i>
-        <?php echo __('File') ?>
+        <?php echo _e('File') ?>
     </div>
 
-    <# if (data.file) { #>
     <div class="linkset-item-file-info">
-        <a href="{{ data.file.url }}" target="_blank">{{ data.file.url }}</a>
+        <a href="{{ data.link_url }}" target="_blank">{{ data.link_url }}</a>
     </div>
-    <# } #>
 
-    <input type="hidden" name="link_file_id" value="{{ data.file ? data.file.id : '' }}" />
-    <input type="hidden" name="link_url" value="{{ data.file ? data.file.url : '' }}" />
+    <input type="hidden" name="link_file_id" value="{{ data.link_file_id }}" />
 </script>
 
 <script type="text/html" id="tmpl-wpPostAttachments-item-youtube">
+    <img class="linkset-video-thumbnail" />
     <div class="linkset-item-type">
         <i class="dashicons dashicons-video-alt3"></i>
-        <?php echo __('YouTube Video') ?>
+        <?php echo _e('YouTube Video') ?>
     </div>
 
-    <input type="text" name="video_id" value="{{ data.video_id }}" placeholder="<?php echo __('Video ID or URL at YouTube') ?>"/>
+    <input type="text" name="link_youtube_url" value="{{ data.link_youtube_url }}" placeholder="<?php esc_attr_e('Video ID or URL at YouTube') ?>"/>
+    <input type="hidden" name="link_youtube_id" value="{{ data.link_youtube_id }}" />
 </script>
