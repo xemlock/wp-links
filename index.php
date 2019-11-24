@@ -253,7 +253,15 @@ add_filter('manage_link_posts_columns', function (array $columns) {
 
 add_filter('post_row_actions', function (array $actions, \WP_Post $post) {
     if ($post->post_type === 'link') {
+        // Show link URL below link title
         echo '<div style="width:100%;overflow:hidden;text-overflow:ellipsis;">', esc_html($post->link_url), '</div>';
+
+        // Make 'View' quick action link open target link
+        if ($post->link_url) {
+            $actions['view'] = '<a href="' . esc_attr($post->link_url) . '" target="_blank">' . esc_html__('View'). '</a>';
+        } else {
+            unset($actions['view']);
+        }
     }
     return $actions;
 },10,2);
