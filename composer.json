@@ -1,0 +1,13 @@
+{
+    "name": "xemlock/wp-links",
+    "description": "Link post type for WordPress",
+    "require": {
+        "php": ">=5.3.0",
+        "ext-ctype": "*"
+    },
+    "autoload": {
+        "files": [
+            "index.php"
+        ]
+    }
+}
