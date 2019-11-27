@@ -3,8 +3,8 @@
 /*
  * Plugin Name: WP Post Type: Link
  * Plugin URI:  https://github.com/xemlock/wp-post-type-link
- * Description: Link custom post type
- * Version:     0.1.0
+ * Description: Link post type
+ * Version:     0.1.0-dev
  * Author:      xemlock
  * Author URI:  https://github.com/xemlock
  */
@@ -277,7 +277,7 @@ add_filter( 'pre_get_posts', function (&$posts) {
     return $posts;
 }, 10 );
 
-add_filter( 'posts_where', function ($where, &$posts) {
+add_filter( 'posts_where', function ($where, $posts) {
     return $where;
 }, 10, 2);
 
