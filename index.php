@@ -33,7 +33,7 @@ add_action('init', function () {
             'thumbnail',
         ),
         'hierarchical'         => false,
-        'menu_position'        => 6,
+        'menu_position'        => 20,
         'show_in_admin_bar'    => true,
         'show_in_nav_menus'    => true,
         'show_ui'              => true,
